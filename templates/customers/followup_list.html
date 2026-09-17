@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-heading">
+    <div><h2>برنامه پیگیری</h2><p>{{ page_obj.paginator.count }} مورد مطابق فیلترهای فعلی</p></div>
+    <div class="actions"><a class="btn btn--primary" href="{% url 'customers:followup_create' %}"><span>+</span> پیگیری جدید</a></div>
+</div>
+
+<form class="filters" method="get" style="grid-template-columns:minmax(220px,1.5fr) repeat(2,minmax(150px,.55fr)) auto">
+    <div class="search-field"><svg viewBox="0 0 24 24"><path d="M9.5 3a6.5 6.5 0 1 0 3.98 11.64L19.85 21 21 19.85l-6.36-6.37A6.5 6.5 0 0 0 9.5 3Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg><input class="form-control" name="q" value="{{ q }}" placeholder="جست‌وجوی عنوان یا مشتری..."></div>
+    <select class="form-control" name="state"><option value="open" {% if selected_state == 'open' %}selected{% endif %}>باز</option><option value="overdue" {% if selected_state == 'overdue' %}selected{% endif %}>عقب‌افتاده</option><option value="done" {% if selected_state == 'done' %}selected{% endif %}>انجام‌شده</option><option value="all" {% if selected_state == 'all' %}selected{% endif %}>همه</option></select>
+    <select class="form-control" name="priority"><option value="">همه اولویت‌ها</option>{% for value, label in priority_choices %}<option value="{{ value }}" {% if selected_priority == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <button class="btn btn--soft" type="submit">اعمال فیلتر</button>
+</form>
+
+<section class="panel">
+    {% if followups %}
+    <div class="table-wrap"><table class="data-table"><thead><tr><th>کار</th><th>مشتری</th><th>نوع</th><th>اولویت</th><th>سررسید</th><th>وضعیت</th><th></th></tr></thead><tbody>
+    {% for followup in followups %}
+        <tr>
+            <td><strong>{{ followup.title }}</strong>{% if followup.notes %}<small class="cell-muted" style="display:block">{{ followup.notes|truncatechars:50 }}</small>{% endif %}</td>
+            <td><a href="{% url 'customers:detail' followup.customer.pk %}">{{ followup.customer.name }}</a></td>
+            <td>{{ followup.get_kind_display }}</td><td><span class="badge badge--{{ followup.priority }}">{{ followup.get_priority_display }}</span></td>
+            <td class="{% if followup.is_overdue %}text-danger{% endif %}"><span class="ltr">{{ followup.due_at|date:"Y/m/d H:i" }}</span></td>
+            <td>{% if followup.completed %}<span class="badge badge--done">انجام‌شده</span>{% elif followup.is_overdue %}<span class="badge badge--lost">عقب‌افتاده</span>{% else %}<span class="badge badge--active">باز</span>{% endif %}</td>
+            <td><div class="row-actions"><form method="post" action="{% url 'customers:followup_toggle' followup.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="icon-button" type="submit" title="تغییر وضعیت"><svg viewBox="0 0 24 24"><path d="m9 16.2-4.2-4.2-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2Z"/></svg></button></form><a class="icon-button" href="{% url 'customers:followup_update' followup.pk %}" title="ویرایش"><svg viewBox="0 0 24 24"><path d="m3 17.25-.01 3.76 3.76-.01L17.81 9.94l-3.75-3.75L3 17.25Z"/></svg></a></div></td>
+        </tr>
+    {% endfor %}
+    </tbody></table></div>
+    {% include "partials/pagination.html" %}
+    {% else %}<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 11H7v-2h4V6h2v7Z"/></svg></div><h3>پیگیری‌ای پیدا نشد</h3><p>یک یادآوری تماس، جلسه یا بازدید محل ثبت کنید.</p><a class="btn btn--primary" href="{% url 'customers:followup_create' %}">ثبت پیگیری</a></div>{% endif %}
+</section>
+{% endblock %}
+

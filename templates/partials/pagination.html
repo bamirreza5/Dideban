@@ -1,0 +1,19 @@
+{% load crm_extras %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="صفحه‌بندی">
+    {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=page_obj.previous_page_number %}" class="page-link">قبلی</a>
+    {% else %}
+        <span class="page-link is-disabled">قبلی</span>
+    {% endif %}
+
+    <span class="page-status">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}" class="page-link">بعدی</a>
+    {% else %}
+        <span class="page-link is-disabled">بعدی</span>
+    {% endif %}
+</nav>
+{% endif %}
+

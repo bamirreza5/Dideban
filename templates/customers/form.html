@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form class="form-card" method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-card-head"><h2>{{ page_title }}</h2><p>فیلدهای ستاره‌دار الزامی هستند. شماره تماس برای هر کاربر باید یکتا باشد.</p></div>
+    <div class="form-card-body">{% include "partials/form_fields.html" %}</div>
+    <div class="form-card-foot">
+        <a class="btn" href="{% if customer %}{% url 'customers:detail' customer.pk %}{% else %}{% url 'customers:list' %}{% endif %}">انصراف</a>
+        <button class="btn btn--primary" type="submit">{{ submit_label }}</button>
+    </div>
+</form>
+{% endblock %}
+

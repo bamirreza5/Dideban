@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load crm_extras %}
+
+{% block content %}
+<div class="page-heading"><div><h2>جزئیات پروژه</h2><p>وضعیت اجرایی و اطلاعات مالی قرارداد</p></div><div class="actions"><a class="btn" href="{% url 'customers:detail' project.customer.pk %}">پرونده مشتری</a><a class="btn btn--primary" href="{% url 'projects:update' project.pk %}">ویرایش پروژه</a></div></div>
+<div class="detail-layout">
+    <div class="detail-stack">
+        <section class="profile-card">
+            <div class="profile-head"><span class="avatar">{{ project.title|slice:":1" }}</span><div><h2>{{ project.title }}</h2><p>{{ project.customer.name }}{% if project.customer.company %} · {{ project.customer.company }}{% endif %}</p></div></div>
+            <div class="profile-badges"><span class="badge badge--{{ project.status }}">{{ project.get_status_display }}</span>{% if project.is_overdue %}<span class="badge badge--lost">سررسید گذشته</span>{% endif %}</div>
+            <div class="mt-16"><div class="progress-meta"><span>پیشرفت پروژه</span><strong>{{ project.progress }}٪</strong></div><div class="progress-track" style="height:10px"><div class="progress-bar" style="--progress:{{ project.progress }}%"></div></div></div>
+            <div class="definition-grid">
+                <div class="definition-item"><span>تاریخ شروع</span><strong>{% if project.start_date %}<span class="ltr">{{ project.start_date|date:"Y/m/d" }}</span>{% else %}ثبت نشده{% endif %}</strong></div>
+                <div class="definition-item"><span>مهلت تحویل</span><strong class="{% if project.is_overdue %}text-danger{% endif %}">{% if project.deadline %}<span class="ltr">{{ project.deadline|date:"Y/m/d" }}</span>{% else %}ثبت نشده{% endif %}</strong></div>
+                <div class="definition-item"><span>تاریخ ایجاد</span><strong class="ltr">{{ project.created_at|date:"Y/m/d H:i" }}</strong></div>
+                <div class="definition-item"><span>آخرین ویرایش</span><strong class="ltr">{{ project.updated_at|date:"Y/m/d H:i" }}</strong></div>
+            </div>
+            {% if project.description %}<div class="note-box">{{ project.description }}</div>{% endif %}
+        </section>
+    </div>
+    <aside class="detail-stack">
+        <section class="panel"><div class="panel-head"><h3>خلاصه مالی</h3></div><div class="panel-body"><div class="metric-row" style="grid-template-columns:1fr"><div class="mini-metric"><span>مبلغ قرارداد</span><strong>{{ project.budget|money }} تومان</strong></div><div class="mini-metric"><span>هزینه اجرا</span><strong>{{ project.cost|money }} تومان</strong></div><div class="mini-metric"><span>سود برآوردی</span><strong class="{% if project.profit < 0 %}text-danger{% else %}text-success{% endif %}">{{ project.profit|money }} تومان</strong></div><div class="mini-metric"><span>حاشیه سود</span><strong>{{ project.profit_margin }}٪</strong></div></div></div></section>
+        <section class="panel"><div class="panel-body"><a class="btn btn--danger-ghost btn--block" href="{% url 'projects:delete' project.pk %}">حذف پروژه</a></div></section>
+    </aside>
+</div>
+{% endblock %}
+

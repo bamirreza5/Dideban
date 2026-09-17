@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load crm_extras %}
+
+{% block content %}
+<div class="page-heading">
+    <div><h2>مدیریت مشتریان</h2><p>{{ page_obj.paginator.count }} پرونده مطابق فیلترهای فعلی</p></div>
+    <div class="actions">
+        <a class="btn" href="{% url 'customers:export' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}">
+            <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z"/></svg> خروجی CSV
+        </a>
+        <a class="btn btn--primary" href="{% url 'customers:create' %}"><span>+</span> مشتری جدید</a>
+    </div>
+</div>
+
+<form class="filters" method="get">
+    <div class="search-field">
+        <svg viewBox="0 0 24 24"><path d="M9.5 3a6.5 6.5 0 1 0 3.98 11.64L19.85 21 21 19.85l-6.36-6.37A6.5 6.5 0 0 0 9.5 3Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg>
+        <input class="form-control" name="q" value="{{ q }}" placeholder="جست‌وجوی نام، تلفن، ایمیل یا شرکت...">
+    </div>
+    <select class="form-control" name="status" aria-label="وضعیت">
+        <option value="">همه وضعیت‌ها</option>
+        {% for value, label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <select class="form-control" name="source" aria-label="منبع">
+        <option value="">همه منابع</option>
+        {% for value, label in source_choices %}<option value="{{ value }}" {% if selected_source == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <select class="form-control" name="sort" aria-label="مرتب‌سازی">
+        <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>جدیدترین</option>
+        <option value="updated" {% if selected_sort == 'updated' %}selected{% endif %}>آخرین ویرایش</option>
+        <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>نام مشتری</option>
+        <option value="oldest" {% if selected_sort == 'oldest' %}selected{% endif %}>قدیمی‌ترین</option>
+    </select>
+    <button class="btn btn--soft" type="submit">اعمال فیلتر</button>
+</form>
+
+<section class="panel">
+    {% if customers %}
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>مشتری</th><th>اطلاعات تماس</th><th>وضعیت</th><th>پروژه‌ها</th><th>منبع</th><th>آخرین تغییر</th><th></th></tr></thead>
+            <tbody>
+            {% for customer in customers %}
+                <tr>
+                    <td><a class="entity-cell" href="{% url 'customers:detail' customer.pk %}"><span class="avatar">{{ customer.initials }}</span><span><strong>{{ customer.name }}</strong><small>{{ customer.company|default:"مشتری حقیقی" }}</small></span></a></td>
+                    <td><span class="ltr nowrap">{{ customer.phone }}</span>{% if customer.email %}<small class="cell-muted" style="display:block">{{ customer.email }}</small>{% endif %}</td>
+                    <td><span class="badge badge--{{ customer.status }}">{{ customer.get_status_display }}</span></td>
+                    <td>{{ customer.project_count }} پروژه</td>
+                    <td>{{ customer.get_source_display }}</td>
+                    <td><span class="ltr">{{ customer.updated|date:"Y/m/d" }}</span></td>
+                    <td><div class="row-actions"><a class="icon-button" href="{% url 'customers:update' customer.pk %}" title="ویرایش"><svg viewBox="0 0 24 24"><path d="m3 17.25-.01 3.76 3.76-.01L17.81 9.94l-3.75-3.75L3 17.25ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z"/></svg></a><a class="icon-button" href="{% url 'customers:detail' customer.pk %}" title="مشاهده"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg></a></div></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "partials/pagination.html" %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.34 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.34 13 8 13Z"/></svg></div>
+        <h3>{% if q or selected_status or selected_source %}نتیجه‌ای پیدا نشد{% else %}هنوز مشتری ثبت نشده است{% endif %}</h3>
+        <p>{% if q or selected_status or selected_source %}فیلترها را تغییر دهید یا پاک کنید.{% else %}برای شروع، نخستین مشتری یا سرنخ فروش را ثبت کنید.{% endif %}</p>
+        {% if q or selected_status or selected_source %}<a class="btn" href="{% url 'customers:list' %}">پاک‌کردن فیلترها</a>{% else %}<a class="btn btn--primary" href="{% url 'customers:create' %}">ثبت مشتری</a>{% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+

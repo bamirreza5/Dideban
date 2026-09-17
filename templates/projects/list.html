@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load crm_extras %}
+
+{% block content %}
+<div class="page-heading">
+    <div><h2>پروژه‌ها و قراردادها</h2><p>{{ page_obj.paginator.count }} پروژه مطابق فیلترهای فعلی</p></div>
+    <div class="actions"><a class="btn" href="{% url 'projects:export' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z"/></svg> خروجی CSV</a><a class="btn btn--primary" href="{% url 'projects:create' %}"><span>+</span> پروژه جدید</a></div>
+</div>
+
+<form class="filters" method="get" style="grid-template-columns:minmax(220px,1.5fr) repeat(2,minmax(150px,.55fr)) auto">
+    <div class="search-field"><svg viewBox="0 0 24 24"><path d="M9.5 3a6.5 6.5 0 1 0 3.98 11.64L19.85 21 21 19.85l-6.36-6.37A6.5 6.5 0 0 0 9.5 3Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/></svg><input class="form-control" name="q" value="{{ q }}" placeholder="جست‌وجوی پروژه یا مشتری..."></div>
+    <select class="form-control" name="status"><option value="">همه وضعیت‌ها</option>{% for value, label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <select class="form-control" name="sort"><option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>جدیدترین</option><option value="deadline" {% if selected_sort == 'deadline' %}selected{% endif %}>نزدیک‌ترین سررسید</option><option value="budget_high" {% if selected_sort == 'budget_high' %}selected{% endif %}>بیشترین مبلغ</option><option value="progress" {% if selected_sort == 'progress' %}selected{% endif %}>بیشترین پیشرفت</option><option value="name" {% if selected_sort == 'name' %}selected{% endif %}>نام پروژه</option></select>
+    <button class="btn btn--soft" type="submit">اعمال فیلتر</button>
+</form>
+
+<section class="panel">
+{% if projects %}
+<div class="table-wrap"><table class="data-table"><thead><tr><th>پروژه</th><th>مشتری</th><th>وضعیت</th><th>پیشرفت</th><th>ارزش قرارداد</th><th>مهلت تحویل</th><th></th></tr></thead><tbody>
+{% for project in projects %}
+    <tr>
+        <td><a class="entity-cell" href="{% url 'projects:detail' project.pk %}"><span class="avatar">{{ project.title|slice:":1" }}</span><span><strong>{{ project.title }}</strong><small>ثبت {{ project.created_at|date:"Y/m/d" }}</small></span></a></td>
+        <td><a href="{% url 'customers:detail' project.customer.pk %}">{{ project.customer.name }}</a></td>
+        <td><span class="badge badge--{{ project.status }}">{{ project.get_status_display }}</span></td>
+        <td style="min-width:145px"><div class="progress-meta"><span>{{ project.progress }}٪</span></div><div class="progress-track"><div class="progress-bar" style="--progress:{{ project.progress }}%"></div></div></td>
+        <td>{{ project.budget|money }} <small class="cell-muted">تومان</small></td>
+        <td class="{% if project.is_overdue %}text-danger{% endif %}">{% if project.deadline %}<span class="ltr">{{ project.deadline|date:"Y/m/d" }}</span>{% else %}—{% endif %}</td>
+        <td><div class="row-actions"><a class="icon-button" href="{% url 'projects:update' project.pk %}" title="ویرایش"><svg viewBox="0 0 24 24"><path d="m3 17.25-.01 3.76 3.76-.01L17.81 9.94l-3.75-3.75L3 17.25Z"/></svg></a><a class="icon-button" href="{% url 'projects:detail' project.pk %}" title="مشاهده"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5ZM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"/></svg></a></div></td>
+    </tr>
+{% endfor %}
+</tbody></table></div>
+{% include "partials/pagination.html" %}
+{% else %}<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M20 6h-4V4H8v2H4v15h16V6Zm-6 0h-4V4h4v2Z"/></svg></div><h3>{% if q or selected_status %}پروژه‌ای پیدا نشد{% else %}هنوز پروژه‌ای ثبت نشده{% endif %}</h3><p>{% if q or selected_status %}عبارت جست‌وجو یا فیلتر وضعیت را تغییر دهید.{% else %}نخستین قرارداد اجرایی خود را ثبت کنید.{% endif %}</p>{% if q or selected_status %}<a class="btn" href="{% url 'projects:list' %}">پاک‌کردن فیلترها</a>{% else %}<a class="btn btn--primary" href="{% url 'projects:create' %}">ثبت پروژه</a>{% endif %}</div>{% endif %}
+</section>
+{% endblock %}
+

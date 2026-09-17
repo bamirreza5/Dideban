@@ -1,0 +1,39 @@
+{% load static %}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ورود | دیدبان CRM</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<main class="auth-page">
+    <section class="auth-form-side">
+        <div class="auth-box">
+            <div class="auth-brand"><span class="brand-mark"><svg viewBox="0 0 48 48"><path d="M7 24c4.7-8 10.4-12 17-12s12.3 4 17 12c-4.7 8-10.4 12-17 12S11.7 32 7 24Z"/><circle cx="24" cy="24" r="6"/></svg></span><span><strong>دیدبان CRM</strong><small>مدیریت هوشمند مشتری و پروژه</small></span></div>
+            <h1>ورود به حساب</h1>
+            <p class="auth-intro">برای ادامه، اطلاعات حساب کاربری خود را وارد کنید.</p>
+            {% if form.non_field_errors %}<div class="form-alert">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                <div class="auth-field"><label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>{{ form.username }}{% for error in form.username.errors %}<small class="error-text">{{ error }}</small>{% endfor %}</div>
+                <div class="auth-field"><label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>{{ form.password }}{% for error in form.password.errors %}<small class="error-text">{{ error }}</small>{% endfor %}</div>
+                <button class="btn btn--primary btn--block" type="submit">ورود به سامانه</button>
+            </form>
+            <div class="auth-help">در اجرای نخست، با دستور <span class="ltr">python manage.py seed_demo</span> یک حساب آزمایشی و داده نمونه بسازید.</div>
+        </div>
+    </section>
+    <section class="auth-visual" aria-hidden="true">
+        <div class="auth-visual-content">
+            <div class="visual-mark"><svg viewBox="0 0 48 48"><path d="M7 24c4.7-8 10.4-12 17-12s12.3 4 17 12c-4.7 8-10.4 12-17 12S11.7 32 7 24Z"/><circle cx="24" cy="24" r="6"/></svg></div>
+            <h2>همه‌چیز زیر نگاه شماست</h2>
+            <p>از نخستین تماس مشتری تا تحویل پروژه و محاسبه سود، یک جریان کاری منظم و قابل پیگیری داشته باشید.</p>
+            <div class="visual-features"><div class="visual-feature">مدیریت مشتری</div><div class="visual-feature">کنترل پروژه</div><div class="visual-feature">یادآوری پیگیری</div></div>
+        </div>
+    </section>
+</main>
+</body>
+</html>
+

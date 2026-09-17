@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load crm_extras %}
+
+{% block content %}
+<div class="page-heading">
+    <div><h2>پرونده مشتری</h2><p>اطلاعات تماس، پروژه‌ها و سابقه پیگیری</p></div>
+    <div class="actions">
+        <a class="btn" href="{% url 'customers:followup_create' %}?customer={{ customer.pk }}">ثبت پیگیری</a>
+        <a class="btn" href="{% url 'projects:create' %}?customer={{ customer.pk }}">پروژه جدید</a>
+        <a class="btn btn--primary" href="{% url 'customers:update' customer.pk %}">ویرایش پرونده</a>
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="detail-stack">
+        <section class="profile-card">
+            <div class="profile-head">
+                <span class="avatar">{{ customer.initials }}</span>
+                <div><h2>{{ customer.name }}</h2><p>{{ customer.company|default:"مشتری حقیقی" }}</p></div>
+            </div>
+            <div class="profile-badges"><span class="badge badge--{{ customer.status }}">{{ customer.get_status_display }}</span><span class="badge">{{ customer.get_source_display }}</span></div>
+            <div class="definition-grid">
+                <div class="definition-item"><span>شماره تماس</span><strong class="ltr">{{ customer.phone }}</strong></div>
+                <div class="definition-item"><span>ایمیل</span><strong>{{ customer.email|default:"ثبت نشده" }}</strong></div>
+                <div class="definition-item"><span>آخرین ارتباط</span><strong>{% if customer.last_contact %}<span class="ltr">{{ customer.last_contact|date:"Y/m/d H:i" }}</span>{% else %}ثبت نشده{% endif %}</strong></div>
+                <div class="definition-item"><span>تاریخ ایجاد پرونده</span><strong class="ltr">{{ customer.created|date:"Y/m/d H:i" }}</strong></div>
+                <div class="definition-item" style="grid-column:1/-1"><span>آدرس</span><strong>{{ customer.address|default:"ثبت نشده" }}</strong></div>
+            </div>
+            {% if customer.description %}<div class="note-box">{{ customer.description }}</div>{% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><div><h3>پروژه‌های مشتری</h3><p>قراردادها و وضعیت اجرای آن‌ها</p></div><a class="panel-link" href="{% url 'projects:create' %}?customer={{ customer.pk }}">افزودن پروژه +</a></div>
+            {% if projects %}
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>عنوان</th><th>وضعیت</th><th>پیشرفت</th><th>مبلغ</th></tr></thead><tbody>
+                {% for project in projects %}<tr><td><a href="{% url 'projects:detail' project.pk %}"><strong>{{ project.title }}</strong></a></td><td><span class="badge badge--{{ project.status }}">{{ project.get_status_display }}</span></td><td>{{ project.progress }}٪</td><td>{{ project.budget|money }} تومان</td></tr>{% endfor %}
+            </tbody></table></div>
+            {% else %}<div class="empty-state"><h3>پروژه‌ای برای این مشتری ثبت نشده</h3><p>در صورت قطعی‌شدن همکاری، پروژه را از همین‌جا ایجاد کنید.</p></div>{% endif %}
+        </section>
+    </div>
+
+    <aside class="detail-stack">
+        <section class="panel"><div class="panel-head"><h3>خلاصه مالی</h3></div><div class="panel-body metric-row" style="grid-template-columns:1fr"><div class="mini-metric"><span>تعداد پروژه‌ها</span><strong>{{ projects|length }}</strong></div><div class="mini-metric"><span>ارزش کل قراردادها</span><strong>{{ customer.total_contract_value|money }} تومان</strong></div><div class="mini-metric"><span>پروژه فعال</span><strong>{{ customer.active_projects_count }}</strong></div></div></section>
+
+        <section class="panel">
+            <div class="panel-head"><div><h3>آخرین پیگیری‌ها</h3><p>تعاملات برنامه‌ریزی‌شده</p></div><a class="panel-link" href="{% url 'customers:followup_create' %}?customer={{ customer.pk }}">افزودن +</a></div>
+            <div class="panel-body followup-list">
+                {% for followup in followups %}
+                <a class="followup-item {% if followup.is_overdue %}is-overdue{% endif %}" href="{% url 'customers:followup_update' followup.pk %}">
+                    <span class="badge badge--{{ followup.priority }}">{{ followup.get_priority_display }}</span>
+                    <span class="followup-info"><strong>{{ followup.title }}</strong><small>{{ followup.get_kind_display }}{% if followup.completed %} · انجام‌شده{% endif %}</small></span>
+                    <span class="followup-date"><strong>{{ followup.due_at|date:"Y/m/d" }}</strong><small>{{ followup.due_at|date:"H:i" }}</small></span>
+                </a>
+                {% empty %}<div class="empty-state" style="padding:30px 15px"><p>هنوز پیگیری‌ای ثبت نشده است.</p></div>{% endfor %}
+            </div>
+        </section>
+
+        <section class="panel"><div class="panel-body"><a class="btn btn--danger-ghost btn--block" href="{% url 'customers:delete' customer.pk %}">حذف پرونده مشتری</a></div></section>
+    </aside>
+</div>
+{% endblock %}
+

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="danger-card">
+    <div class="danger-icon">!</div><h2>حذف «{{ customer.name }}»؟</h2>
+    <p>پیگیری‌های این مشتری نیز حذف می‌شوند. اگر پروژه‌ای برای او ثبت شده باشد، سیستم برای جلوگیری از حذف ناخواسته عملیات را متوقف می‌کند.</p>
+    <form method="post" class="danger-actions">{% csrf_token %}<a class="btn" href="{% url 'customers:detail' customer.pk %}">انصراف</a><button class="btn btn--danger" type="submit">بله، حذف شود</button></form>
+</div>
+{% endblock %}
+

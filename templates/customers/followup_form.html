@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form class="form-card" method="post" novalidate>
+    {% csrf_token %}<div class="form-card-head"><h2>{{ page_title }}</h2><p>تاریخ و ساعت سررسید را دقیق وارد کنید تا در داشبورد نمایش داده شود.</p></div>
+    <div class="form-card-body">{% include "partials/form_fields.html" %}</div>
+    <div class="form-card-foot">{% if followup %}<a class="btn btn--danger-ghost" href="{% url 'customers:followup_delete' followup.pk %}" style="margin-left:auto">حذف</a>{% endif %}<a class="btn" href="{% url 'customers:followup_list' %}">انصراف</a><button class="btn btn--primary" type="submit">{{ submit_label }}</button></div>
+</form>
+{% endblock %}
+
